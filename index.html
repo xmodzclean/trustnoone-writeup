@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust No One - OSINT CTF Writeup | ELITESEC</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('by4cxikr.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'CustomFont', Arial, sans-serif;
+            line-height: 1.6;
+            color: #ffffff;
+            background: #000000;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: left;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: #000000;
+            border-radius: 8px;
+            border: 1px solid #cb0000;
+        }
+
+        .challenge-title {
+            font-size: 3em;
+            font-weight: bold;
+            color: #cb0000;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .author-badge {
+            background: linear-gradient(45deg, #8b0000, #cb0000);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(203, 0, 0, 0.4);
+            border: 1px solid rgba(203, 0, 0, 0.5);
+        }
+
+        .challenge-info {
+            display: flex;
+            justify-content: flex-start;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .info-badge {
+            background: #333;
+            border: 1px solid #cb0000;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .difficulty-medium {
+            background: #444;
+        }
+
+        .points {
+            background: #444;
+        }
+
+        .section {
+            background: #000000;
+            margin: 30px 0;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .section h2 {
+            color: #cb0000;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h3 {
+            color: #cd853f;
+            margin: 25px 0 15px 0;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .challenge-description {
+            background: rgba(139, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #8b0000;
+            margin: 25px 0;
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+
+        .step-number {
+            background: #cb0000;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            border: 1px solid #444;
+            overflow-x: auto;
+            font-family: 'CustomFont', 'Courier New', monospace;
+        }
+
+        .encoded-text {
+            background: #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 3px solid #cb0000;
+            font-family: 'CustomFont', 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        .decoded-text {
+            background: #2a3a2a;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 3px solid #32cd32;
+            font-family: 'CustomFont', 'Courier New', monospace;
+        }
+
+        .flag {
+            background: #cb0000;
+            color: white;
+            padding: 20px;
+            border-radius: 4px;
+            text-align: left;
+            font-family: 'CustomFont', 'Courier New', monospace;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .warning {
+            background: #3a2a1a;
+            border: 1px solid #ff8c00;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            color: #ffa500;
+        }
+
+        .success {
+            background: #1a3a1a;
+            border: 1px solid #32cd32;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            color: #32cd32;
+        }
+
+        .image-placeholder {
+            background: #2a0a0a;
+            border: 2px dashed #8b0000;
+            padding: 50px;
+            text-align: center;
+            border-radius: 15px;
+            margin: 25px 0;
+            color: #ffffff;
+            font-style: italic;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #cb0000;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #cb0000;
+            border: 2px solid #1a1a1a;
+        }
+
+        .tools-used {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .tool-tag {
+            background: #333;
+            color: #cb0000;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #444;
+            margin: 3px;
+            display: inline-block;
+        }
+
+        /* Image styling */
+        .step-images {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .step-images img {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 10px;
+            border: 1px solid #8b0000;
+            display: block;
+        }
+
+        .footer {
+            text-align: left;
+            margin-top: 40px;
+            padding: 30px;
+            background: #000000;
+            border-radius: 8px;
+            border: 1px solid #444;
+            color: #ffffff;
+        }
+
+        /* Challenge Card Styles */
+        .challenge-card {
+            width: 100%;
+            max-width: 760px;
+            background: #000000;
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.03);
+            padding: 22px;
+            margin: 20px 0;
+        }
+
+        .card-titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .card-title-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon-wrap {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: linear-gradient(180deg, #1f1f1f, #151515);
+            border: 1px solid rgba(255,255,255,0.02);
+            font-size: 18px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            color: #f6f6f6;
+        }
+
+        .card-top-badge {
+            font-size: 15px;
+            font-weight: 700;
+            color: #9aa0a6;
+            background: transparent;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .card-accent-line {
+            height: 4px;
+            border-radius: 4px;
+            margin-top: 14px;
+            background: linear-gradient(90deg, #ff6b3a, #ffb86b 60%);
+            box-shadow: 0 2px 8px rgba(255,106,60,0.08);
+        }
+
+        .card-content {
+            margin-top: 18px;
+        }
+
+        .card-left-col {
+            flex: 1;
+        }
+
+        .card-desc {
+            color: #d6d6d6;
+            font-size: 15px;
+            line-height: 1.6;
+            border-top: 1px solid #2b2b2b;
+            padding-top: 14px;
+            margin: 0;
+        }
+
+        .card-author {
+            display: block;
+            margin-top: 12px;
+            color: #e84b4b;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .challenge-info {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .challenge-title {
+                font-size: 2em;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="challenge-title">trust_  no_one</h1>
+            <p style="color: #cd853f; font-size: 1.2em; margin: 10px 0 20px 0; font-weight: 600;">
+                Official writeup written on: November 2, 2025
+            </p>
+            <div class="challenge-info">
+                    <div class="info-badge">NullHat CTF</div>
+                    <div class="info-badge difficulty-medium">For experts: Easy | For beginners: Medium</div>
+                    <div class="info-badge points">500 Points</div>
+                </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-scroll"></i> Challenge Description</h2>
+            
+            <div class="challenge-card">
+                <div class="card-titlebar">
+                    <div class="card-title-left">
+                        <div class="card-icon-wrap">
+                            <img src="images/logo.png" alt="ELITESEC Logo" style="width: 20px; height: 20px; object-fit: contain;">
+                        </div>
+                        <div class="card-title">trust no one</div>
+                    </div>
+                    <div class="card-top-badge">500 pts</div>
+                </div>
+                <div class="card-accent-line"></div>
+                <div class="card-content">
+                    <div class="card-left-col">
+                        <p class="card-desc">A security researcher known as "KaelenSys" from madrid, discovered a critical vulnerability but only left cryptic clues across platforms.</p>
+                        <span class="card-author">Author: Xmodz</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-info-circle"></i> Note</h2>
+            <p style="font-size: 1.1em; line-height: 1.8; color: #ffffff;">
+                <strong>Note:</strong> OSINT is a very large field with lots to explore. The challenge I've shown here, and the way I solve it, are just a small part of what you can do. There are many tools, techniques, and tricks out there that you can learn. If you want to go further and really understand OSINT, I recommend reading this <a href="https://osintteam.blog/osint-how-to-find-information-on-anyone-5029a3c7fd56" target="_blank" style="color: #cb0000; text-decoration: underline;">blog post by Petro Cherkasets</a>, which gives a clear and easy-to-follow overview of the field. It's a great starting point for anyone who wants to learn more.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-route"></i> How I Solved It</h2>
+            
+            <p style="margin-bottom: 30px; font-size: 1.1em; color: #cd853f;">
+        
+         Alright, let me walk you through exactly how I solved this challenge!. Here's my step-by-step solution:
+            </p>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h3><span class="step-number">1</span> Starting with the Basics</h3>
+                    <p><strong>What I extracted from the challenge:</strong></p>
+                    <ul style="margin: 15px 0 15px 30px;">
+                        <li><strong>Target:</strong> "KaelenSys"</li>
+                        <li><strong>Location:</strong> Madrid</li>
+                        <li><strong>Context:</strong> Security researcher</li>
+                    </ul>
+                    
+                    <p>First thing I did was try the obvious - Google and DuckDuckGo searches. As expected with CTF challenges, I got absolutely nothing:</p>
+                    <div class="step-images">
+                        <img src="images/google.png" alt="Google search results">
+                        <img src="images/duckduckgo.png" alt="DuckDuckGo search results">
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">2</span> Social Media Investigation</h3>
+                    <p><strong>Next step was social media.</strong> When search engines fail, this is usually where you find something:</p>
+                    <ul style="margin: 15px 0 15px 30px;">
+                        <li><strong>Instagram:</strong> No account found</li>
+                        <li><strong>GitHub:</strong> Nothing there either</li>
+                        <li><strong>Twitter/X:</strong> Found an account from Madrid - this was significant because the challenge mentioned KaelenSys was from Madrid, so this matched our target profile   </li>
+                    </ul>
+                    
+                    <div class="step-images">
+                        <img src="images/x.png" alt="KaelenSys Twitter account" style="max-width: 700px;">
+                    </div>
+                    
+                    <p><strong>The account looked suspicious:</strong></p>
+                    <ul style="margin: 15px 0 15px 30px;">
+                        <li>No posts at all</li>
+                        <li>Empty bio</li>
+                        <li>Following exactly 35 accounts</li>
+                    </ul>
+                    
+                    <p>This seemed worth investigating further.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">3</span> The Following List</h3>
+                    <p>I decided to manually check all 35 accounts this person was following. Yeah, it was tedious, but OSINT requires patience! Most were legitimate cybersecurity professionals, but one caught my eye:</p>
+                    
+                    <div class="step-images">
+                        <img src="images/follow.png" alt="Following list analysis">
+                        <img src="images/b.png" alt="Suspicious Madrid-based account">
+                    </div>
+                    
+                    <p><strong>This suspicious account had something interesting:</strong></p>
+                    <div class="encoded-text">
+                        bit.ly/dS9Gb3JlaWduX1…
+                    </div>
+                    
+                    <p><em>Notice how the link was truncated? That was my first hint that I'd need to dig deeper into the source code later.</em></p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">4</span> First Website & The Classic CTF Trap</h3>
+                    <p><strong>I clicked that bit.ly link and it took me to:</strong></p>
+                    <div class="code-block">
+                        https://ds9gb3jlawdux1jlc29ydf81mjq3.free.bg/
+                    </div>
+                    
+                    <p><strong>Wait, that domain name looked suspicious!</strong> The subdomain "ds9gb3jlawdux1jlc29ydf81mjq3" looked like it could be Base64. I tried decoding it:</p>
+                    <div class="encoded-text">
+                        ds9gb3jlawdux1jlc29ydf81mjq3 → <span style="color: #ff8c00;">v�ox�kn�X�soru�5�:� (corrupted data)</span>
+                    </div>
+                    <p>The decoding didn't give me anything useful - just corrupted data. So I continued investigating the actual website.</p>
+                    
+                    <div class="step-images">
+                        <img src="images/site.png" alt="Deleted website">
+                    </div>
+                    
+                    <p>The page said "website deleted" but I wasn't giving up that easily! I checked the source code and found hidden content:</p>
+                    <div class="step-images">
+                        <img src="images/tick.png" alt="Hidden content in source">
+                    </div>
+                    <div class="encoded-text">
+                        &lt;div style="display:none"&gt;UllWR1JGUlB7MV9lMzR5eWxfajRhZ19nMF9qNGZnM19sMGhlX2cxejN9&lt;/div&gt;
+                    </div>
+                    
+                    <div class="step-images">
+                        <img src="images/dec.png" alt="Base64 decoding process">
+                    </div>
+                    
+                    <p><strong>I decoded the Base64:</strong></p>
+                    <div class="decoded-text">
+                        RYVGRFRP{1_e34yyl_j4ag_g0_j4fg3_l0he_g1z3}
+                    </div>
+                    
+                    <p>This looked like a flag but was gibberish. I tried ROT13 and got:</p>
+                    <div class="warning">
+                        <strong>⚠️ DECOY FLAG:</strong> ELITESEC{1_r34lly_w4nt_t0_w4st3_y0ur_t1m3}
+                        <br><em>This was obviously a fake flag. The challenge name "trust_no_one" was starting to make sense - this was clearly a decoy.</em>
+                    </div>
+                    
+                    <p>But I noticed something else - that animated clock on the page was giving me major Wayback Machine vibes:</p>
+                    <div class="step-images">
+                        <img src="images/web.png" alt="Wayback Machine interface">
+                    </div>
+                    
+                    <div style="background: rgba(139, 0, 0, 0.2); padding: 20px; border-radius: 10px; margin: 15px 0; border: 1px solid #8b0000;">
+                        <p style="margin: 0; font-size: 0.95em; color: #cd853f;"><strong>The Wayback Machine</strong> 
+                         is a digital archive of the web, created and maintained by the Internet Archive. Think of it as a time machine for websites, it allows you to see what a website looked like in the past.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">5</span> Lets back to the past</h3>
+                    <p>The clock animation was clearly hinting at the Wayback Machine, so I checked web.archive.org and found 2 snapshots saved 3 days ago:</p>
+                    
+                    <div class="step-images">
+                        <img src="images/1s.png" alt="First Wayback Machine snapshot">
+                        <img src="images/2s.png" alt="Second Wayback Machine snapshot">
+                    </div>
+                    
+                    <p>The second snapshot showed a GitHub account. At first look it seemed empty, but this gave me a crucial clue - I could see the real identity: <strong>Yara Monteagudo Llorente</strong>. This made perfect sense because he's from Madrid (matching our target location) and is also a security researcher (matching the challenge description). So now I understood that KaelenSys is actually Yara Monteagudo Llorente. But the first snapshot... that's where things got interesting.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">6</span> The Favicon That Saved The Day</h3>
+                    <p>Going back to the first snapshot, I was stuck. The page seemed normal, but I knew there had to be more. That's when I remembered a key OSINT principle: <strong>always check the small details that others might overlook.</strong></p>
+                    
+                    <p>Then I remembered there was a hint provided: <em>"any website has a logo, but where? not right now"</em>. This hint was telling me that while websites have logos, this particular logo/favicon wasn't available "right now" (in the current version), but it existed before - meaning I should check previous versions!</p>
+                    
+                    <p>I thought about what files are commonly present on websites but rarely checked by casual investigators. The favicon! Most people ignore it, but it's a perfect place to hide data. So I decided to check the favicon of the real site and noticed something interesting - when comparing the 2 snapshots, the favicon only existed in the first snapshot, not the second. This seemed suspicious, so I decided to check the favicon.ico file from the first snapshot:</p>
+                    
+                    <div class="step-images">
+                        <img src="images/fav.png" alt="Favicon file from Wayback Machine">
+                    </div>
+                    
+                    <p>In OSINT investigations, data is often hidden in image metadata, so I checked the favicon with ExifTool:</p>
+                    
+                    <div class="step-images">
+                        <img src="images/exif.png" alt="ExifTool metadata analysis of favicon">
+                    </div>
+                    
+                    <p><strong>Found some encoded Base64 texts and hex in the metadata:</strong></p>
+                    
+                    <p><strong>All the encoded data I found:</strong></p>
+                    <div class="encoded-text">
+                        id:1761496578;token:FDW0eWuA6v9U;part1:RUxJVEVTRUN7
+                        <br>note:temporary;part:dHI0YzNfdGgzXw
+                        <br>ca607b28cfce00b8281bdd87 (hex)
+                        <br>1316ce145752cd6bbeffcdc59bb8f448 (hex)
+                    </div>
+                    
+                    <p><strong>But only 2 of them decoded successfully:</strong></p>
+                    
+                    <div class="step-images">
+                        <img src="images/brr.png" alt="Metadata analysis revealing Base64 encoded data">
+                    </div>
+                    <div class="encoded-text">
+                        RUxJVEVTRUN7 → <span style="color: #32cd32;">ELITESEC{</span>
+                        <br>dHI0YzNfdGgzXw== → <span style="color: #32cd32;">tr4c3_th3_</span>
+                    </div>
+                    
+                    <div class="encoded-text">
+                        FDW0eWuA6v9U → <span style="color: #ff8c00;">Corrupted data</span>
+                        <br>ca607b28cfce00b8281bdd87 (hex) → <span style="color: #ff8c00;">Corrupted data</span>
+                        <br>1316ce145752cd6bbeffcdc59bb8f448 (hex) → <span style="color: #ff8c00;">Corrupted data</span>
+                    </div>
+                    
+                    <p><strong>Progress so far:</strong></p>
+                    <div class="encoded-text">
+                        ELITESEC{tr4c3_th3_????}
+                        <br>ELITESEC{????tr4c3_th3_
+                        <br>ELITESEC{????tr4c3_th3_????}
+                    </div>
+                    <p>I was getting somewhere, but I still needed the ending!</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">7</span> Back to Twitter for the Full URL</h3>
+                    <p>Remember that truncated bit.ly link from step 3? I noticed it had some capital letters that looked promising:</p>
+                    <div class="encoded-text">
+                        bit.ly/dS9Gb3JlaWduX1… (truncated)
+                    </div>
+                    
+                    <p>Since I couldn't see the full URL, I went back to the Twitter page and checked the source code to get the complete link:</p>
+                    <div class="step-images">
+                        <img src="images/link.png" alt="Full bit.ly link in Twitter source code">
+                    </div>
+                    <div class="code-block">
+                        https://bit.ly/dS9Gb3JlaWduX1Jlc29ydF81MjQ3
+                    </div>
+                    
+                    <p><strong>Now I could decode the full path part:</strong></p>
+                    <div class="encoded-text">
+                        dS9Gb3JlaWduX1Jlc29ydF81MjQ3 → <span style="color: #32cd32;">u/Foreign_Resort_5247</span>
+                    </div>
+                    
+                    <p>This looks like a Reddit username, so I checked Reddit next.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">8</span> Reddit..</h3>
+                    <p>I searched Reddit for u/Foreign_Resort_5247 and found they had posted in r/cybersecurity, but the post was deleted.</p>
+                    
+                    <div class="step-images">
+                        <img src="images/reddit.png" alt="Reddit post by Foreign_Resort_5247">
+                    </div>
+                    
+                    <p><strong>Looking at the comments:</strong></p>
+                    <div class="step-images">
+                        <img src="images/cmt.png" alt="Reddit comment with Base64">
+                    </div>
+                    
+                    <div class="success">
+                        "i got it before its deleted dW50cmFjM2FibDN9"
+                    </div>
+                    
+                    <p><strong>More Base64! I decoded it:</strong></p>
+                    
+                    <div class="step-images">
+                        <img src="images/mer.png" alt="Base64 decoding process for final piece">
+                    </div>
+                    
+                    <div class="encoded-text">
+                        dW50cmFjM2FibDN9 → <span style="color: #32cd32;">untrac3abl3}</span>
+                    </div>
+                    
+                    <p>THAT'S THE MISSING PIECE!</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3><span class="step-number">9</span> Putting It All Together!</h3>
+                    <p><strong>Finally! I had all the pieces of the flag:</strong></p>
+                    
+                    <div style="background: rgba(139, 0, 0, 0.2); padding: 25px; border-radius: 15px; margin: 25px 0; border: 1px solid #8b0000;">
+                        <div style="margin: 12px 0;"><strong>Part 1 (from favicon):</strong> <span style="color: #cb0000;">ELITESEC{</span></div>
+                        <div style="margin: 12px 0;"><strong>Part 2 (from favicon):</strong> <span style="color: #cb0000;">tr4c3_th3_</span></div>
+                        <div style="margin: 12px 0;"><strong>Part 3 (from Reddit):</strong> <span style="color: #cb0000;">untrac3abl3}</span></div>
+                    </div>
+                    
+                    
+                    <div class="flag">
+                        <i class="fas fa-flag-checkered"></i> ELITESEC{tr4c3_th3_untrac3abl3}
+                    </div>
+                    
+                    <div class="success">
+                        <strong>🎉 SUCCESS!</strong> The flag was accepted!
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Challenge created with ❤️ by ELITESEC CTF TEAM</p>
+          
+            <p style="margin-top: 20px; color: #cd853f; line-height: 1.6;">
+                I hope you enjoyed solving this challenge as much as I enjoyed creating it! 
+                The goal was to create a realistic OSINT scenario that tests multiple skills and teaches the importance of verification @Xmodz.
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
